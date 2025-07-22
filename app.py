@@ -22,7 +22,8 @@ def profitCalculator(avg1, avg2, df, price_column):
     number_of_stocks = 0
     purchased_Amount = 0
     profit_loss = 0
-
+    sell_markers = []
+	
     for index, row in df.iterrows():
         if row['Action'] == "Buy":
             number_of_stocks += 1
@@ -31,12 +32,29 @@ def profitCalculator(avg1, avg2, df, price_column):
             if purchased_Amount > 0:
                 curr_profit = (row[price_column] * number_of_stocks) - purchased_Amount
                 profit_loss += curr_profit
+                sell_markers.append((row['Date'], row[price_column]))
+                
             number_of_stocks = 0
             purchased_Amount = 0
         df.loc[index, 'Profit/Loss'] = profit_loss
 
     profit_loss += (df.loc[len(df)-1, price_column] * number_of_stocks) - purchased_Amount
-    return df, profit_loss
+    print(sell_markers)
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(df['Date'], df['SMA Fast'], label=f'SMA {fast}', color='blue')
+    ax.plot(df['Date'], df['SMA Slow'], label=f'SMA {slow}', color='orange')
+    if sell_markers:
+    	sell_dates, sell_prices = zip(*sell_markers)
+    	ax.scatter(sell_dates, sell_prices, color='red', label='Sell', marker='v', s=80)
+
+    ax.set_title(f'SMA {fast} vs SMA {slow} with Sell Points')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Price')
+    ax.legend()
+    ax.grid(True)
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    return df, profit_loss, fig
 
 
 
@@ -52,8 +70,8 @@ if uploaded_file:
     sma2 = st.number_input("Enter SMA 2", min_value=1, value=70)
 
     if st.button("Run Calculation"):
-        result_df, profit = profitCalculator(sma1, sma2, df, price_column)
+        result_df, profit, fig = profitCalculator(sma1, sma2, df, price_column)
 
         st.write("Total Profit/Loss: ₹", round(profit, 2))
-        st.line_chart(result_df.set_index("Date")[["SMA Fast", "SMA Slow"]])
+        st.pyplot(fig)
         st.dataframe(result_df)
