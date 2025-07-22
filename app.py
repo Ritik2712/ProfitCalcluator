@@ -60,6 +60,12 @@ def profitCalculator(avg1, avg2, df, price_column):
 
 st.title("SMA Profit Calculator")
 
+st.markdown(
+    """
+    📄 [Download Sample CSV](https://docs.google.com/spreadsheets/d/1cMxlSTqfBijsV3kHz5kL1yfDdESkBSuVBdZ7f-XZ58M/export?format=csv)
+    """
+)
+
 uploaded_file = st.file_uploader("Upload TISC.csv file", type="csv")
 
 if uploaded_file:
